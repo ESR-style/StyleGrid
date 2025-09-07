@@ -21,7 +21,36 @@ export const ColumnFilter: React.FC<FilterProps> = ({
   const filterRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [portalPos, setPortalPos] = useState<{top:number;left:number;width:number}>({top:0,left:0,width:0});
+  const [positionCalculated, setPositionCalculated] = useState(false);
   const portalContentRef = useRef<HTMLDivElement>(null);
+
+  const calculatePosition = () => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      const portalWidth = Math.max(r.width, 260);
+      const viewportWidth = window.innerWidth;
+      
+      let left = r.left + window.scrollX;
+      
+      // Check if portal would go off-screen to the right
+      if (left + portalWidth > viewportWidth) {
+        // Position it to the left of the trigger button
+        left = r.right + window.scrollX - portalWidth;
+      }
+      
+      // Ensure it doesn't go off-screen to the left
+      if (left < 0) {
+        left = 10; // 10px margin from left edge
+      }
+      
+      setPortalPos({ 
+        top: r.bottom + window.scrollY, 
+        left: left, 
+        width: r.width 
+      });
+      setPositionCalculated(true);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,20 +63,24 @@ export const ColumnFilter: React.FC<FilterProps> = ({
         !portalContentRef.current.contains(target)
       ) {
         setIsOpen(false);
+        setPositionCalculated(false);
       }
     };
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsOpen(false); };
+    const handleEsc = (e: KeyboardEvent) => { 
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        setPositionCalculated(false);
+      }
+    };
     const handleReposition = () => {
       if (triggerRef.current && isOpen) {
-  const r = triggerRef.current.getBoundingClientRect();
-  setPortalPos({ top: r.bottom + window.scrollY, left: r.left + window.scrollX, width: r.width });
+        calculatePosition();
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEsc);
     window.addEventListener('scroll', handleReposition, true);
     window.addEventListener('resize', handleReposition);
-    handleReposition();
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEsc);
@@ -61,11 +94,6 @@ export const ColumnFilter: React.FC<FilterProps> = ({
     onFilterChange(column.field, value);
   };
 
-  const clearFilter = () => {
-    setFilterValue('');
-    onFilterChange(column.field, null);
-  };
-
   if (!column.filter) return null;
 
   return (
@@ -76,12 +104,21 @@ export const ColumnFilter: React.FC<FilterProps> = ({
           p-1 rounded hover:bg-gray-200 transition-colors
           ${filterValue ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}
         `}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const next = !isOpen;
+          if (next) {
+            calculatePosition();
+          } else {
+            setPositionCalculated(false);
+          }
+          setIsOpen(next);
+          window.dispatchEvent(new CustomEvent('grid-filter-open', { detail: next }));
+        }}
         title="Filter"
       >
         <Search className="w-3 h-3" />
       </button>
-      {isOpen && createPortal(
+      {isOpen && positionCalculated && createPortal(
         <div
           ref={portalContentRef}
           className="bg-white border border-gray-200 rounded-md shadow-lg z-[9999] min-w-64 fixed"
@@ -92,15 +129,13 @@ export const ColumnFilter: React.FC<FilterProps> = ({
               <span className="font-medium text-sm text-gray-900">
                 Filter {column.headerName || column.field}
               </span>
-              {filterValue && (
-                <button
-                  onClick={clearFilter}
-                  className="text-gray-400 hover:text-gray-600"
-                  title="Clear filter"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              <button
+                onClick={() => { setIsOpen(false); window.dispatchEvent(new CustomEvent('grid-filter-open', { detail: false })); }}
+                className="text-gray-400 hover:text-gray-600"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             {column.filterType === 'text' && (
               <TextFilter
@@ -131,7 +166,7 @@ export const ColumnFilter: React.FC<FilterProps> = ({
               />
             )}
           </div>
-        </div>,
+  </div>,
         document.body
       )}
     </div>
@@ -364,3 +399,4 @@ const SetFilter: React.FC<SetFilterProps> = ({ column, data, value, onChange }) 
     </div>
   );
 };
+
