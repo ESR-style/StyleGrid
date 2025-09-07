@@ -1,0 +1,297 @@
+/* AG Grid Theme CSS - Exact replica of ag-theme-alpine */
+
+.ag-grid-container {
+  --ag-foreground-color: #1f2937;
+  --ag-background-color: #fff;
+  --ag-header-foreground-color: #1f2937;
+  --ag-header-background-color: #f9fafb;
+  --ag-odd-row-background-color: transparent;
+  --ag-even-row-background-color: #f8fafc;
+  --ag-row-hover-color: #f1f5f9;
+  --ag-selected-row-background-color: #dbeafe;
+  --ag-border-color: #e5e7eb;
+  --ag-secondary-border-color: #f3f4f6;
+  --ag-header-cell-hover-background-color: #f3f4f6;
+  --ag-header-cell-moving-background-color: #e5e7eb;
+  --ag-cell-horizontal-border: 1px solid var(--ag-border-color);
+  --ag-row-border-color: #f3f4f6;
+}
+
+.ag-theme-alpine {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ag-header {
+  background-color: var(--ag-header-background-color);
+  border-bottom: 1px solid var(--ag-border-color);
+  font-weight: 600;
+}
+
+.ag-header-cell {
+  border-right: 1px solid var(--ag-secondary-border-color);
+  padding: 0;
+  background: var(--ag-header-background-color);
+}
+
+.ag-header-cell:hover {
+  background-color: var(--ag-header-cell-hover-background-color);
+}
+
+.ag-header-cell-resize {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.ag-header-cell-resize:hover {
+  background-color: #2563eb;
+}
+
+.ag-cell {
+  border-right: 1px solid var(--ag-secondary-border-color);
+  border-bottom: 1px solid var(--ag-row-border-color);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.ag-row {
+  background-color: var(--ag-background-color);
+}
+
+.ag-row:nth-child(even) {
+  background-color: var(--ag-even-row-background-color);
+}
+
+.ag-row:hover {
+  background-color: var(--ag-row-hover-color);
+}
+
+.ag-row-selected {
+  background-color: var(--ag-selected-row-background-color) !important;
+}
+
+.ag-pinned-left-header,
+.ag-pinned-left-cols-container {
+  border-right: 2px solid var(--ag-border-color);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.ag-pinned-right-header,
+.ag-pinned-right-cols-container {
+  border-left: 2px solid var(--ag-border-color);
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.ag-header-cell-menu-button {
+  display: none;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ag-header-cell:hover .ag-header-cell-menu-button {
+  display: block;
+}
+
+.ag-filter-toolpanel-header,
+.ag-column-toolpanel-header {
+  background: var(--ag-header-background-color);
+  border-bottom: 1px solid var(--ag-border-color);
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ag-sort-ascending-icon,
+.ag-sort-descending-icon {
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+}
+
+.ag-checkbox {
+  appearance: none;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  width: 14px;
+  height: 14px;
+  position: relative;
+  cursor: pointer;
+}
+
+.ag-checkbox:checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.ag-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -1px;
+  left: 1px;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.ag-checkbox:indeterminate {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.ag-checkbox:indeterminate::after {
+  content: '−';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.ag-status-bar {
+  background: var(--ag-header-background-color);
+  border-top: 1px solid var(--ag-border-color);
+  padding: 4px 12px;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ag-paging-panel {
+  border-top: 1px solid var(--ag-border-color);
+  background: var(--ag-header-background-color);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ag-overlay-loading-wrapper {
+  background: rgba(255, 255, 255, 0.8);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ag-floating-filter-wrapper {
+  border-bottom: 1px solid var(--ag-border-color);
+  background: #fafbfc;
+}
+
+/* Exact AG Grid filter popup styling */
+.ag-filter-wrapper {
+  background: white;
+  border: 1px solid var(--ag-border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  min-width: 200px;
+}
+
+.ag-filter-condition {
+  margin-bottom: 8px;
+}
+
+.ag-filter-condition select,
+.ag-filter-condition input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.ag-filter-apply-panel {
+  border-top: 1px solid var(--ag-border-color);
+  padding-top: 8px;
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ag-filter-apply-panel button {
+  padding: 4px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  background: white;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.ag-filter-apply-panel button:hover {
+  background: #f3f4f6;
+}
+
+.ag-menu {
+  background: white;
+  border: 1px solid var(--ag-border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  min-width: 160px;
+}
+
+.ag-menu-option {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ag-menu-option:hover {
+  background: var(--ag-row-hover-color);
+}
+
+.ag-menu-separator {
+  border-top: 1px solid var(--ag-secondary-border-color);
+  margin: 4px 0;
+}
+
+/* Virtual scrolling optimization */
+.ag-center-cols-viewport {
+  overflow: auto;
+}
+
+.ag-body-horizontal-scroll {
+  overflow-x: auto;
+}
+
+.ag-body-vertical-scroll {
+  overflow-y: auto;
+}
+
+/* Loading spinner */
+.ag-loading-spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #2563eb;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
