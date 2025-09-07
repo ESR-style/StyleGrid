@@ -6,10 +6,10 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 
 const DemoApp = () => {
   const [rowData] = useState(() => generateMockData(100)); // Reduced from 1000 to 100
-  const [currentDemo, setCurrentDemo] = useState<'default' | 'pivot' | 'financial' | 'sales'>('default');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
 
-  const createDemoOptions = (demoType: string): GridOptions => {
-    const baseOptions: GridOptions = {
+  const createGridOptions = (): GridOptions => {
+    const options: GridOptions = {
       columnDefs: mockColumnDefs as any,
       rowData,
       defaultColDef: {
@@ -32,38 +32,14 @@ const DemoApp = () => {
       sideBar: true,
       statusBar: true,
       onGridReady: (params) => {
-        console.log(`${demoType} demo grid ready!`, params);
-        
-        // Apply demo-specific configurations
-        switch (demoType) {
-          case 'pivot':
-            // Auto-configure pivot mode
-            params.api.setSortModel([{ colId: 'department', sort: 'asc' }]);
-            break;
-          case 'financial':
-            // Focus on financial columns
-            params.api.setSortModel([{ colId: 'revenue', sort: 'desc' }]);
-            break;
-          case 'sales':
-            // Sales performance view
-            params.api.setSortModel([{ colId: 'projects', sort: 'desc' }]);
-            break;
-        }
+        console.log('Grid ready!', params);
       },
     };
 
-    return baseOptions;
+    return options;
   };
 
-  const demos = [
-    { id: 'default', name: 'All Features' },
-    { id: 'pivot', name: 'Pivot' },
-    { id: 'financial', name: 'Financial' },
-    { id: 'sales', name: 'Sales' },
-  ];
-
   const [fullscreen, setFullscreen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('All');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const toggleFullscreen = () => {
@@ -71,17 +47,9 @@ const DemoApp = () => {
   };
 
   return (
-  <div className={`flex flex-col ${fullscreen ? 'fixed inset-0 bg-gray-900 overflow-hidden' : 'min-h-screen bg-gray-100'}`}>
-      <div className="flex items-center px-4 py-2 bg-white border-b border-gray-200 space-x-4 text-sm">
-        <div className="font-semibold text-gray-800">SelfAG Grid Demos:</div>
-        {demos.map(d => (
-          <button
-            key={d.id}
-            onClick={() => setCurrentDemo(d.id as any)}
-            className={`px-3 py-1 rounded ${currentDemo === d.id ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-          >{d.name}</button>
-        ))}
-        <div className="ml-auto flex items-center space-x-2">
+    <div className={`flex flex-col ${fullscreen ? 'fixed inset-0 bg-gray-900 overflow-hidden' : 'min-h-screen bg-gray-100'}`}>
+      <div className="flex items-center justify-end px-4 py-2 bg-white border-b border-gray-200 space-x-4 text-sm">
+        <div className="flex items-center space-x-2">
           <span className="text-gray-500">Rows: {rowData.length}</span>
           <span className="text-gray-500">Cols: {mockColumnDefs.length}</span>
           <button
@@ -113,9 +81,9 @@ const DemoApp = () => {
         >
           <div className="flex-1 min-h-0">
             <DataGrid 
-              key={currentDemo + ':' + statusFilter}
+              key={statusFilter}
               options={{
-                ...createDemoOptions(currentDemo),
+                ...createGridOptions(),
                 rowData: rowData.filter(r => statusFilter==='All' ? true : r.status === statusFilter)
               }}
               className="h-full"
