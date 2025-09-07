@@ -162,40 +162,71 @@ const GridContent: React.FC = () => {
       });
     });
 
-    // Apply sorting
+    // Apply sorting (stable, data-type aware, valueGetter aware, date & null handling)
     if (state.sortModel.length > 0) {
+      // Map for stable sort fallback (original index)
+      const originalIndexMap = new Map<any, number>();
+      state.rowData.forEach((row, idx) => originalIndexMap.set(row, idx));
+
+      const isNumeric = (val: any) => {
+        if (val === null || val === undefined || val === '') return false;
+        if (typeof val === 'number') return !isNaN(val);
+        if (typeof val === 'string') return !isNaN(Number(val.trim()));
+        return false;
+      };
+
+      const toComparable = (val: any, column: ColumnDef | undefined) => {
+        if (val === null || val === undefined) return null;
+        // Date handling: explicit date filterType OR Date instance
+        if (val instanceof Date) return val.getTime();
+        if (column?.filterType === 'date') {
+          if (val instanceof Date) return val.getTime();
+          const t = Date.parse(val);
+          return isNaN(t) ? null : t;
+        }
+        if (typeof val === 'boolean') return val ? 1 : 0;
+        if (isNumeric(val)) return Number(val);
+        return String(val).toLowerCase();
+      };
+
       filteredData.sort((a, b) => {
         for (const sort of state.sortModel) {
           const column = state.columnDefs.find(col => col.field === sort.colId);
           if (!column) continue;
 
-          let valueA = a[sort.colId];
-          let valueB = b[sort.colId];
+            // Support valueGetter if provided
+          let rawA: any = column.valueGetter
+            ? column.valueGetter({ data: a, node: { id: '', data: a, rowIndex: -1, level: 0 }, column })
+            : a[sort.colId];
+          let rawB: any = column.valueGetter
+            ? column.valueGetter({ data: b, node: { id: '', data: b, rowIndex: -1, level: 0 }, column })
+            : b[sort.colId];
 
-          // Use custom comparator if available
+          // Custom comparator gets raw values
           if (column.comparator) {
-            const result = column.comparator(valueA, valueB);
-            if (result !== 0) {
-              return sort.sort === 'asc' ? result : -result;
-            }
+            const cmp = column.comparator(rawA, rawB);
+            if (cmp !== 0) return sort.sort === 'asc' ? cmp : -cmp;
             continue;
           }
 
-          // Default comparison
-          if (valueA === null || valueA === undefined) valueA = '';
-          if (valueB === null || valueB === undefined) valueB = '';
+          const valueA = toComparable(rawA, column);
+          const valueB = toComparable(rawB, column);
 
-          if (typeof valueA === 'string') valueA = valueA.toLowerCase();
-          if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+          // Null / undefined ordering: always push nulls last in asc, first in desc
+          const aNull = valueA === null || valueA === undefined;
+          const bNull = valueB === null || valueB === undefined;
+          if (aNull && bNull) continue;
+          if (aNull && !bNull) return sort.sort === 'asc' ? 1 : -1;
+          if (!aNull && bNull) return sort.sort === 'asc' ? -1 : 1;
 
-          if (valueA < valueB) {
-            return sort.sort === 'asc' ? -1 : 1;
-          }
-          if (valueA > valueB) {
-            return sort.sort === 'asc' ? 1 : -1;
-          }
+          if (valueA! < valueB!) return sort.sort === 'asc' ? -1 : 1;
+          if (valueA! > valueB!) return sort.sort === 'asc' ? 1 : -1;
+          // else tie -> next sort instruction
         }
-        return 0;
+        // Stable fallback
+        const idxA = originalIndexMap.get(a) ?? 0;
+        const idxB = originalIndexMap.get(b) ?? 0;
+        return idxA - idxB;
       });
     }
 
@@ -268,18 +299,35 @@ const GridContent: React.FC = () => {
     return base;
   }, [state.columnDefs, state.columnOrder, state.hiddenColumns, analysisConfig, analysisAggregates, zoom]);
 
-  const handleSort = useCallback((colId: string) => {
-    const existingSort = state.sortModel.find(sort => sort.colId === colId);
-    let newSortModel: SortModel[];
-    if (!existingSort) {
-      newSortModel = [...state.sortModel, { colId, sort: 'asc' }];
-    } else if (existingSort.sort === 'asc') {
-      newSortModel = state.sortModel.map(sort =>
-        sort.colId === colId ? { ...sort, sort: 'desc' as const } : sort
-      );
+  const handleSort = useCallback((colId: string, multi?: boolean) => {
+    const existingSort = state.sortModel.find(s => s.colId === colId);
+    let newSortModel: SortModel[] = [];
+
+    if (multi) {
+      // Multi-sort (Shift): toggle cycle asc -> desc -> remove, always move to front for priority
+      if (!existingSort) {
+        newSortModel = [{ colId, sort: 'asc' as const }, ...state.sortModel];
+      } else if (existingSort.sort === 'asc') {
+        newSortModel = state.sortModel.map(s => s.colId === colId ? { ...s, sort: 'desc' as const } : s)
+          .filter(Boolean);
+        // Move updated column to front
+        const updated = newSortModel.find(s => s.colId === colId)!;
+        newSortModel = [updated, ...newSortModel.filter(s => s.colId !== colId)];
+      } else {
+        // remove
+        newSortModel = state.sortModel.filter(s => s.colId !== colId);
+      }
     } else {
-      newSortModel = state.sortModel.filter(sort => sort.colId !== colId);
+      // Single column mode (no Shift): cycle asc -> desc -> none
+      if (!existingSort) {
+        newSortModel = [{ colId, sort: 'asc' }];
+      } else if (existingSort.sort === 'asc') {
+        newSortModel = [{ colId, sort: 'desc' }];
+      } else {
+        newSortModel = [];
+      }
     }
+
     dispatch({ type: 'SET_SORT_MODEL', payload: newSortModel });
   }, [state.sortModel, dispatch]);
 
@@ -289,13 +337,7 @@ const GridContent: React.FC = () => {
     dispatch({ type: 'RESIZE_COLUMN', payload: { colId, width: baseWidth } });
   }, [dispatch, zoom]);
 
-  const handlePin = useCallback((colId: string, pinned: 'left' | 'right' | null) => {
-    dispatch({ type: 'PIN_COLUMN', payload: { colId, pinned } });
-  }, [dispatch]);
-
-  const handleHide = useCallback((colId: string) => {
-    dispatch({ type: 'TOGGLE_COLUMN_VISIBILITY', payload: colId });
-  }, [dispatch]);
+  // Pin & hide handlers moved out of header (future context menu integration)
 
   const handleFilterChange = useCallback((colId: string, filterValue: any) => {
     const newFilterModel = { ...state.filterModel };
@@ -463,11 +505,13 @@ const GridContent: React.FC = () => {
                     width={getColumnWidth(column.field, column.width)}
                     onResize={handleResize}
                     onSort={handleSort}
-                    onPin={handlePin}
-                    onHide={handleHide}
                   />
                   {column.filter && (
-                    <div className="absolute top-0 right-0 px-1" style={{ transform: `scale(${zoom})`, transformOrigin: 'top right' }}>
+                    <div 
+                      className="absolute top-0 right-0 px-1" 
+                      style={{ transform: `scale(${zoom})`, transformOrigin: 'top right', pointerEvents: 'auto' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <ColumnFilter
                         column={column}
                         data={state.rowData}

@@ -7,9 +7,8 @@ interface GridHeaderProps {
   column: ColumnDef;
   width: number;
   onResize: (colId: string, width: number) => void;
-  onSort: (colId: string) => void;
-  onPin: (colId: string, pinned: 'left' | 'right' | null) => void;
-  onHide: (colId: string) => void;
+  // onSort now supports multi-sort when second arg true (Shift key)
+  onSort: (colId: string, multi?: boolean) => void;
 }
 
 export const GridHeader: React.FC<GridHeaderProps> = ({
@@ -53,13 +52,16 @@ export const GridHeader: React.FC<GridHeaderProps> = ({
   };
 
   const handleColumnClick = (e: React.MouseEvent) => {
-    // Don't sort if clicking on the filter or during resize
-    if ((e.target as HTMLElement).closest('.column-filter') || isResizing) {
+    // Prevent sorting during resize
+    if (isResizing) {
       return;
     }
     
+    // Only sort if column is sortable
     if (column.sortable) {
-      onSort(column.field);
+      e.preventDefault();
+      e.stopPropagation();
+      onSort(column.field, e.shiftKey); // Shift => multi-sort
     }
   };
 
@@ -76,9 +78,11 @@ export const GridHeader: React.FC<GridHeaderProps> = ({
   return (
     <div className="relative flex items-center h-full bg-gray-50 border-b border-gray-200 px-2">
       <div 
-        className={`flex-1 flex items-center space-x-1 ${column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''} rounded px-1 py-1 transition-colors`}
+        className={`flex-1 flex items-center space-x-1 ${column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''} rounded px-1 py-1 transition-colors select-none`}
         onClick={handleColumnClick}
+        onMouseDown={(e) => e.stopPropagation()} // Prevent interference with resize
         title={column.sortable ? `Click to sort by ${column.headerName || column.field}` : undefined}
+        style={{ pointerEvents: 'auto' }}
       >
         <span className="text-sm font-medium text-gray-700 truncate">
           {column.headerName}

@@ -180,12 +180,12 @@ interface TextFilterProps {
 }
 
 const TextFilter: React.FC<TextFilterProps> = ({ value, onChange, placeholder }) => {
-  const [condition, setCondition] = useState('contains');
+  const [condition, setCondition] = useState((value as any)?.condition || 'contains');
   const [inputValue, setInputValue] = useState((value as any)?.value || '');
 
   useEffect(() => {
     onChange({ condition, value: inputValue } as any);
-  }, [condition, inputValue, onChange]);
+  }, [condition, inputValue]); // Removed onChange from dependencies to prevent flash
 
   return (
     <div className="space-y-2">
@@ -218,12 +218,12 @@ interface NumberFilterProps {
 }
 
 const NumberFilter: React.FC<NumberFilterProps> = ({ value, onChange, placeholder }) => {
-  const [condition, setCondition] = useState('equals');
+  const [condition, setCondition] = useState(value?.condition || 'equals');
   const [inputValue, setInputValue] = useState(value?.value || '');
 
   useEffect(() => {
     onChange({ condition, value: inputValue ? parseFloat(inputValue) : null });
-  }, [condition, inputValue, onChange]);
+  }, [condition, inputValue]); // Removed onChange from dependencies to prevent flash
 
   return (
     <div className="space-y-2">
@@ -272,12 +272,12 @@ interface DateFilterProps {
 }
 
 const DateFilter: React.FC<DateFilterProps> = ({ value, onChange }) => {
-  const [condition, setCondition] = useState('equals');
+  const [condition, setCondition] = useState(value?.condition || 'equals');
   const [inputValue, setInputValue] = useState(value?.value || '');
 
   useEffect(() => {
     onChange({ condition, value: inputValue });
-  }, [condition, inputValue, onChange]);
+  }, [condition, inputValue]); // Removed onChange from dependencies to prevent flash
 
   return (
     <div className="space-y-2">
@@ -328,7 +328,7 @@ const SetFilter: React.FC<SetFilterProps> = ({ column, data, value, onChange }) 
 
   useEffect(() => {
     onChange({ values: Array.from(selectedValues) });
-  }, [selectedValues, onChange]);
+  }, [selectedValues]); // Removed onChange from dependencies to prevent flash
 
   const toggleValue = (val: string) => {
     const newSelected = new Set(selectedValues);
