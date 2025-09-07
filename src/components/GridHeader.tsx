@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useGridContext } from '../context/GridContext';
 import type { ColumnDef } from '../types/grid';
 
@@ -17,19 +17,9 @@ export const GridHeader: React.FC<GridHeaderProps> = ({
   width,
   onResize,
   onSort,
-  onPin,
-  onHide,
 }) => {
-  const { state, dispatch } = useGridContext();
+  const { state } = useGridContext();
   const [isResizing, setIsResizing] = React.useState(false);
-  const [anyFilterOpen, setAnyFilterOpen] = React.useState(false);
-  const [showMenu, setShowMenu] = React.useState(false);
-
-  React.useEffect(() => {
-    const handler = (e: any) => setAnyFilterOpen(!!e.detail);
-    window.addEventListener('grid-filter-open', handler as any);
-    return () => window.removeEventListener('grid-filter-open', handler as any);
-  }, []);
   
   const resizeStartRef = React.useRef<{ startX: number; startWidth: number } | null>(null);
 
@@ -62,87 +52,39 @@ export const GridHeader: React.FC<GridHeaderProps> = ({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleColumnClick = (e: React.MouseEvent) => {
+    // Don't sort if clicking on the filter or during resize
+    if ((e.target as HTMLElement).closest('.column-filter') || isResizing) {
+      return;
+    }
+    
+    if (column.sortable) {
+      onSort(column.field);
+    }
+  };
+
+  const getSortIcon = () => {
+    if (!column.sortable || !sortDirection) return null;
+    
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="w-3 h-3 text-blue-600" />
+    ) : (
+      <ChevronDown className="w-3 h-3 text-blue-600" />
+    );
+  };
+
   return (
     <div className="relative flex items-center h-full bg-gray-50 border-b border-gray-200 px-2">
-      <span className="flex-1 text-sm font-medium text-gray-700">
-        {column.headerName}
-      </span>
-
-      {showMenu && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
-          <div className="py-1">
-            {column.sortable && (
-              <>
-                <button
-                  className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onSort(column.field);
-                    setShowMenu(false);
-                  }}
-                >
-                  Sort Ascending
-                </button>
-                <button
-                  className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onSort(column.field);
-                    setShowMenu(false);
-                  }}
-                >
-                  Sort Descending
-                </button>
-                <hr className="my-1" />
-              </>
-            )}
-            
-            <button
-              className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-              onClick={e => {
-                e.stopPropagation();
-                onPin(column.field, 'left');
-                setShowMenu(false);
-              }}
-            >
-              Pin Left
-            </button>
-            <button
-              className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-              onClick={e => {
-                e.stopPropagation();
-                onPin(column.field, 'right');
-                setShowMenu(false);
-              }}
-            >
-              Pin Right
-            </button>
-            <button
-              className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-              onClick={e => {
-                e.stopPropagation();
-                onPin(column.field, null);
-                setShowMenu(false);
-              }}
-            >
-              No Pin
-            </button>
-            
-            <hr className="my-1" />
-            
-            <button
-              className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-              onClick={e => {
-                e.stopPropagation();
-                onHide(column.field);
-                setShowMenu(false);
-              }}
-            >
-              Hide Column
-            </button>
-          </div>
-        </div>
-      )}
+      <div 
+        className={`flex-1 flex items-center space-x-1 ${column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''} rounded px-1 py-1 transition-colors`}
+        onClick={handleColumnClick}
+        title={column.sortable ? `Click to sort by ${column.headerName || column.field}` : undefined}
+      >
+        <span className="text-sm font-medium text-gray-700 truncate">
+          {column.headerName}
+        </span>
+        {getSortIcon()}
+      </div>
 
       {column.resizable && (
         <div
