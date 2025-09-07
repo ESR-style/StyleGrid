@@ -343,9 +343,8 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({ open, onClose }) => {
   };
 
   return (
-    <div className={`w-full transition-[max-height] duration-300 bg-white border-b border-gray-200 shadow-sm ${open ? 'max-h-[700px] overflow-y-auto' : 'max-h-0 overflow-hidden'}`}>
-      {open && (
-        <div className="p-4 space-y-4">
+    <div className={`w-full bg-white border-b border-gray-200 shadow-sm transition-all duration-300 ${open ? 'block' : 'hidden'}`}>
+      <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
           {/* Header */}
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-semibold text-gray-700">Data Visualization</h3>
@@ -411,11 +410,10 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({ open, onClose }) => {
           </div>
 
           {/* Chart Display */}
-          <div className="h-96 w-full bg-white border border-gray-200 rounded-lg p-4">
+          <div className="h-80 w-full bg-white border border-gray-200 rounded-lg p-4">
             {renderChart()}
           </div>
         </div>
-      )}
     </div>
   );
 };

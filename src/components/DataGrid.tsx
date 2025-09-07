@@ -22,7 +22,7 @@ interface DataGridProps {
 export const DataGrid: React.FC<DataGridProps> = ({ options, className = '' }) => {
   return (
     <GridProvider options={options}>
-      <div className={`ag-theme-alpine ag-grid-container h-full flex flex-1 flex-col min-h-0 ${className}`}>
+      <div className={`ag-theme-alpine ag-grid-container h-full flex flex-1 flex-col ${className}`} style={{ height: '100vh', overflow: 'auto' }}>
         <GridContent />
       </div>
     </GridProvider>
@@ -444,7 +444,7 @@ const GridContent: React.FC = () => {
 
   return (
     <>
-  <div className="flex-1 flex flex-col overflow-hidden bg-white relative min-h-0">
+      <div className="flex-1 flex flex-col bg-white relative" style={{ minHeight: '100%' }}>
         {/* Toolbar */}
         <div className="ag-header flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0" style={{ height: toolbarHeight }}>
           <div className="flex items-center gap-3 whitespace-nowrap overflow-visible">
@@ -510,11 +510,11 @@ const GridContent: React.FC = () => {
           </div>
         </div>
 
-  {/* Charts Panel */}
-  <ChartsPanel open={chartsOpen} onClose={() => setChartsOpen(false)} />
+        {/* Charts Panel */}
+        <ChartsPanel open={chartsOpen} onClose={() => setChartsOpen(false)} />
 
-  {/* Content area (logical scaling: widths, heights, font-size) */}
-  <div className="flex flex-col flex-1 min-h-0">
+        {/* Content area (logical scaling: widths, heights, font-size) */}
+        <div className="flex flex-col flex-1 overflow-auto">
         {/* Analysis summary bar */}
         {analysisConfig && Object.keys(analysisConfig.aggregations).length > 0 && (
           <div className="text-xs md:text-sm px-4 py-2 bg-indigo-50 border-b border-indigo-200 flex flex-wrap gap-x-6 gap-y-1 leading-snug">
@@ -576,14 +576,14 @@ const GridContent: React.FC = () => {
         {/* Virtual Grid Body */}
         <div 
           ref={containerRef}
-          className="flex-1 ag-center-cols-viewport min-h-0"
-          style={{ }}
+          className="ag-center-cols-viewport"
+          style={{ minHeight: '400px' }}
         >
           {processedData.length > 0 ? (
             <div
               ref={listOuterRef}
-              style={{ height: '100%', overflow: 'auto', width: '100%' }}
-              className="ag-body-viewport relative z-10 flex-1"
+              style={{ height: `${Math.max(400, processedData.length * scaledRowHeight)}px`, overflow: 'visible', width: '100%' }}
+              className="ag-body-viewport relative z-10"
             >
               <div style={{ width: Math.max(totalWidth, containerRef.current?.clientWidth || 0), position: 'relative', zIndex: 10 }}>
                 {processedData.map((_, index) => (
@@ -612,10 +612,10 @@ const GridContent: React.FC = () => {
             </div>
           </div>
         )}
-  {/* Status Bar at bottom */}
-  <div className="shrink-0"><StatusBar /></div>
-        </div>{/* end zoom wrapper */}
-      </div>
+        {/* Status Bar at bottom */}
+        <div className="shrink-0"><StatusBar /></div>
+        </div>{/* end content area */}
+      </div>{/* end main container */}
 
       {/* Context Menu */}
       {contextMenu && (
