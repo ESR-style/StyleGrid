@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { Plus, Minus, RefreshCw } from 'lucide-react';
+import { Plus, Minus, RefreshCw, BarChart3 } from 'lucide-react';
 // NOTE: Temporarily removed react-window usage due to broken import; using simple scroll list.
 import { GridProvider, useGridContext } from '../context/GridContext';
 import { GridHeader } from './GridHeader';
@@ -7,6 +7,7 @@ import { GridCell } from './GridCell';
 import { ColumnFilter } from './ColumnFilter';
 // Removed legacy GridSidebar usage for new DataAnalysis modal
 import { StatusBar } from './StatusBar';
+import { ChartsPanel } from './ChartsPanel';
 import { ContextMenu } from './ContextMenu';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { DataAnalysisModal } from './DataAnalysisModal';
@@ -75,7 +76,20 @@ VirtualRow.displayName = 'VirtualRow';
 const GridContent: React.FC = () => {
   const { state, dispatch } = useGridContext();
   const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [chartsOpen, setChartsOpen] = useState(false);
   const [analysisConfig, setAnalysisConfig] = useState<DataAnalysisConfig | null>(null);
+
+  // Debug log for charts state
+  console.log('Charts open state:', chartsOpen);
+
+  // Chart toggle handler (functional to avoid stale closure + single point logging)
+  const handleChartsToggle = useCallback(() => {
+    setChartsOpen(prev => {
+      const next = !prev;
+      console.log('[Charts] toggled ->', next);
+      return next;
+    });
+  }, []);
   const [analysisAggregates, setAnalysisAggregates] = useState<Record<string, number>>({});
   const [zoom, setZoom] = useState(1); // UI zoom (font + row height)
   const [contextMenu, setContextMenu] = useState<{
@@ -433,7 +447,17 @@ const GridContent: React.FC = () => {
   <div className="flex-1 flex flex-col overflow-hidden bg-white relative min-h-0">
         {/* Toolbar */}
         <div className="ag-header flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0" style={{ height: toolbarHeight }}>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3 whitespace-nowrap overflow-visible">
+            {/* Charts toggle (forced left-most) */}
+            <button
+              onClick={handleChartsToggle}
+              aria-pressed={chartsOpen}
+              className={`flex items-center gap-1 px-3 py-1 text-[11px] rounded font-semibold transition-colors border shadow-sm ${chartsOpen ? 'bg-green-600 border-green-700 text-white' : 'bg-white border-indigo-300 text-indigo-700 hover:bg-indigo-50'}`}
+              title={chartsOpen ? 'Hide Charts Panel' : 'Show Charts Panel'}
+            >
+              <BarChart3 className="w-3 h-3" />
+              {chartsOpen ? 'Hide Charts' : 'Show Charts'}
+            </button>
             <button
               onClick={() => setAnalysisOpen(true)}
               className="px-2 py-1 text-[11px] rounded bg-blue-600 text-white hover:bg-blue-700"
@@ -446,7 +470,7 @@ const GridContent: React.FC = () => {
             </span>
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center flex-wrap gap-2">
             {/* Zoom Controls */}
             <div className="flex items-center space-x-1 border border-gray-300 rounded px-1 py-0.5 bg-white">
               <button
@@ -485,6 +509,9 @@ const GridContent: React.FC = () => {
             )}
           </div>
         </div>
+
+  {/* Charts Panel */}
+  <ChartsPanel open={chartsOpen} onClose={() => setChartsOpen(false)} />
 
   {/* Content area (logical scaling: widths, heights, font-size) */}
   <div className="flex flex-col flex-1 min-h-0">

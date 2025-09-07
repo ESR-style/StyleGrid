@@ -73,13 +73,15 @@ npm run build
 ### Basic Grid Setup
 
 ```tsx
-import { DataGrid } from './components/DataGrid';
+import { GridProvider } from './context/GridContext';
+import { DataGridContent } from './components/DataGridContent';
 import { generateMockData, mockColumnDefs } from './data/mockData';
 
 const App = () => {
+  const rowData = generateMockData(1000);
   const gridOptions = {
     columnDefs: mockColumnDefs,
-    rowData: generateMockData(1000),
+    rowData,
     enableSorting: true,
     enableFilter: true,
     enableRowSelection: true,
@@ -88,7 +90,11 @@ const App = () => {
     enableGrouping: true,
   };
 
-  return <DataGrid options={gridOptions} />;
+  return (
+    <GridProvider options={gridOptions}>
+      <DataGridContent className="h-[600px]" />
+    </GridProvider>
+  );
 };
 ```
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { Plus, Minus, RefreshCw } from 'lucide-react';
+import { Plus, Minus, RefreshCw, BarChart3 } from 'lucide-react';
 // NOTE: Temporarily removed react-window usage due to broken import; using simple scroll list.
 import { useGridContext } from '../context/GridContext';
 import { GridHeader } from './GridHeader';
@@ -7,6 +7,7 @@ import { GridCell } from './GridCell';
 import { ColumnFilter } from './ColumnFilter';
 // Removed legacy GridSidebar usage for new DataAnalysis modal
 import { StatusBar } from './StatusBar';
+import { ChartsPanel } from './ChartsPanel';
 import { ContextMenu } from './ContextMenu';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { DataAnalysisModal } from './DataAnalysisModal';
@@ -72,6 +73,7 @@ VirtualRow.displayName = 'VirtualRow';
 const GridContent: React.FC = () => {
   const { state, dispatch } = useGridContext();
   const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [chartsOpen, setChartsOpen] = useState(false);
   const [analysisConfig, setAnalysisConfig] = useState<DataAnalysisConfig | null>(null);
   const [analysisAggregates, setAnalysisAggregates] = useState<Record<string, number>>({});
   const [zoom, setZoom] = useState(1); // UI zoom (font + row height)
@@ -428,7 +430,18 @@ const GridContent: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden bg-white relative min-h-0">
         {/* Toolbar */}
         <div className="ag-header flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0" style={{ height: toolbarHeight }}>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3 whitespace-nowrap overflow-visible">
+            {/* Charts toggle far left */}
+            <button
+              onClick={() => setChartsOpen(o=>!o)}
+              aria-pressed={chartsOpen}
+              className={`flex items-center gap-1 px-3 py-1 text-[11px] rounded font-semibold transition-colors border shadow-sm ${chartsOpen ? 'bg-green-600 border-green-700 text-white' : 'bg-white border-indigo-300 text-indigo-700 hover:bg-indigo-50'}`}
+              title={chartsOpen ? 'Hide Charts Panel' : 'Show Charts Panel'}
+            >
+              <BarChart3 className="w-3 h-3" />
+              {chartsOpen ? 'Hide Charts' : 'Show Charts'}
+            </button>
+            {/* Analysis button */}
             <button
               onClick={() => setAnalysisOpen(true)}
               className="px-2 py-1 text-[11px] rounded bg-blue-600 text-white hover:bg-blue-700"
@@ -481,7 +494,10 @@ const GridContent: React.FC = () => {
           </div>
         </div>
 
-        {/* Content area (logical scaling: widths, heights, font-size) */}
+  {/* Charts Panel (pushes grid down) */}
+  <ChartsPanel open={chartsOpen} onClose={() => setChartsOpen(false)} />
+
+  {/* Content area (logical scaling: widths, heights, font-size) */}
         <div className="flex flex-col flex-1 min-h-0">
           {/* Analysis summary bar */}
           {analysisConfig && Object.keys(analysisConfig.aggregations).length > 0 && (
