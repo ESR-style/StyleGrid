@@ -220,10 +220,20 @@ interface NumberFilterProps {
 const NumberFilter: React.FC<NumberFilterProps> = ({ value, onChange, placeholder }) => {
   const [condition, setCondition] = useState(value?.condition || 'equals');
   const [inputValue, setInputValue] = useState(value?.value || '');
+  const [rangeFrom, setRangeFrom] = useState(value?.from || '');
+  const [rangeTo, setRangeTo] = useState(value?.to || '');
 
   useEffect(() => {
-    onChange({ condition, value: inputValue ? parseFloat(inputValue) : null });
-  }, [condition, inputValue]); // Removed onChange from dependencies to prevent flash
+    if (condition === 'inRange') {
+      onChange({ 
+        condition, 
+        from: rangeFrom ? parseFloat(rangeFrom) : null,
+        to: rangeTo ? parseFloat(rangeTo) : null
+      });
+    } else {
+      onChange({ condition, value: inputValue ? parseFloat(inputValue) : null });
+    }
+  }, [condition, inputValue, rangeFrom, rangeTo]); // Added rangeFrom and rangeTo to dependencies
 
   return (
     <div className="space-y-2">
@@ -244,11 +254,15 @@ const NumberFilter: React.FC<NumberFilterProps> = ({ value, onChange, placeholde
         <div className="space-y-2">
           <input
             type="number"
+            value={rangeFrom}
+            onChange={e => setRangeFrom(e.target.value)}
             placeholder="From"
             className="w-full px-3 py-1 border border-gray-300 rounded text-sm"
           />
           <input
             type="number"
+            value={rangeTo}
+            onChange={e => setRangeTo(e.target.value)}
             placeholder="To"
             className="w-full px-3 py-1 border border-gray-300 rounded text-sm"
           />

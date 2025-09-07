@@ -132,21 +132,41 @@ const GridContent: React.FC = () => {
           const cellValue = parseFloat(value);
           const condition = (filter as any).condition || 'equals';
           
-          if (isNaN(cellValue) || filterValue === null || filterValue === undefined) return true;
+          if (isNaN(cellValue)) return true;
           
           switch (condition) {
             case 'equals':
+              if (filterValue === null || filterValue === undefined) return true;
               return cellValue === filterValue;
             case 'notEquals':
+              if (filterValue === null || filterValue === undefined) return true;
               return cellValue !== filterValue;
             case 'greaterThan':
+              if (filterValue === null || filterValue === undefined) return true;
               return cellValue > filterValue;
             case 'greaterThanOrEqual':
+              if (filterValue === null || filterValue === undefined) return true;
               return cellValue >= filterValue;
             case 'lessThan':
+              if (filterValue === null || filterValue === undefined) return true;
               return cellValue < filterValue;
             case 'lessThanOrEqual':
+              if (filterValue === null || filterValue === undefined) return true;
               return cellValue <= filterValue;
+            case 'inRange':
+              const fromValue = (filter as any).from;
+              const toValue = (filter as any).to;
+              if (fromValue === null && toValue === null) return true;
+              if (fromValue !== null && toValue !== null) {
+                return cellValue >= fromValue && cellValue <= toValue;
+              }
+              if (fromValue !== null) {
+                return cellValue >= fromValue;
+              }
+              if (toValue !== null) {
+                return cellValue <= toValue;
+              }
+              return true;
             default:
               return true;
           }
