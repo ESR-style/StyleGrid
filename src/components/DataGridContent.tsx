@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Plus, Minus, RefreshCw } from 'lucide-react';
 // NOTE: Temporarily removed react-window usage due to broken import; using simple scroll list.
-import { GridProvider, useGridContext } from '../context/GridContext';
+import { useGridContext } from '../context/GridContext';
 import { GridHeader } from './GridHeader';
 import { GridCell } from './GridCell';
 import { ColumnFilter } from './ColumnFilter';
@@ -11,20 +11,17 @@ import { ContextMenu } from './ContextMenu';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { DataAnalysisModal } from './DataAnalysisModal';
 import type { DataAnalysisConfig } from './DataAnalysisModal';
-import type { GridOptions, ColumnDef, SortModel } from '../types/grid';
+import type { ColumnDef, SortModel } from '../types/grid';
 
-interface DataGridProps {
-  options: GridOptions;
+interface DataGridContentProps {
   className?: string;
 }
 
-export const DataGrid: React.FC<DataGridProps> = ({ options, className = '' }) => {
+export const DataGridContent: React.FC<DataGridContentProps> = ({ className = '' }) => {
   return (
-    <GridProvider options={options}>
-      <div className={`ag-theme-alpine ag-grid-container h-full flex flex-1 flex-col min-h-0 ${className}`}>
-        <GridContent />
-      </div>
-    </GridProvider>
+    <div className={`ag-theme-alpine ag-grid-container h-full flex flex-1 flex-col min-h-0 ${className}`}>
+      <GridContent />
+    </div>
   );
 };
 
@@ -37,7 +34,7 @@ const VirtualRow = React.memo(({ index, style, data }: any) => {
   return (
     <div 
       style={style}
-  className={`ag-row flex ${isSelected ? 'ag-row-selected' : ''} ${index % 2 === 0 ? '' : 'ag-row-odd'}`}
+      className={`ag-row flex ${isSelected ? 'ag-row-selected' : ''} ${index % 2 === 0 ? '' : 'ag-row-odd'}`}
       onClick={() => onRowClick(index)}
       onContextMenu={(e) => onContextMenu(e, rowData)}
     >
@@ -357,8 +354,6 @@ const GridContent: React.FC = () => {
     dispatch({ type: 'RESIZE_COLUMN', payload: { colId, width: baseWidth } });
   }, [dispatch, zoom]);
 
-  // Pin & hide handlers moved out of header (future context menu integration)
-
   const handleFilterChange = useCallback((colId: string, filterValue: any) => {
     const newFilterModel = { ...state.filterModel };
     if (filterValue === null || filterValue === undefined || filterValue === '') {
@@ -430,7 +425,7 @@ const GridContent: React.FC = () => {
 
   return (
     <>
-  <div className="flex-1 flex flex-col overflow-hidden bg-white relative min-h-0">
+      <div className="flex-1 flex flex-col overflow-hidden bg-white relative min-h-0">
         {/* Toolbar */}
         <div className="ag-header flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0" style={{ height: toolbarHeight }}>
           <div className="flex items-center space-x-4">
@@ -486,107 +481,107 @@ const GridContent: React.FC = () => {
           </div>
         </div>
 
-  {/* Content area (logical scaling: widths, heights, font-size) */}
-  <div className="flex flex-col flex-1 min-h-0">
-        {/* Analysis summary bar */}
-        {analysisConfig && Object.keys(analysisConfig.aggregations).length > 0 && (
-          <div className="text-xs md:text-sm px-4 py-2 bg-indigo-50 border-b border-indigo-200 flex flex-wrap gap-x-6 gap-y-1 leading-snug">
-            <span className="text-indigo-700 font-semibold pr-2">Aggregations:</span>
-            {Object.entries(analysisConfig.aggregations).filter(([_,t])=>t).map(([field,type]) => {
-              const val = analysisAggregates[field];
-              const col = state.columnDefs.find(c=>c.field===field);
-              if (val === undefined) return null;
-              const label = (col?.headerName || field) + ' ' + type.toUpperCase();
-              const formatted = ['sum','avg','min','max'].includes(type as any) ? val.toLocaleString(undefined,{maximumFractionDigits:2}) : val;
-              return <span key={field} className="text-indigo-700 font-medium">{label}: <span className="font-semibold">{formatted}</span></span>;
-            })}
-            {analysisConfig.contributionColumn && analysisAggregates[analysisConfig.contributionColumn] !== undefined && (
-              <span className="text-indigo-700">Total {(state.columnDefs.find(c=>c.field===analysisConfig.contributionColumn)?.headerName)||analysisConfig.contributionColumn}: {analysisAggregates[analysisConfig.contributionColumn].toLocaleString(undefined,{maximumFractionDigits:2})}</span>
-            )}
-          </div>
-        )}
-
-        {/* Header */}
-        <div 
-          ref={headerRef}
-          className="ag-header overflow-hidden border-b border-gray-200 z-40 bg-gray-50 shrink-0 relative"
-          style={{ height: headerHeight, overflowX: 'hidden', fontSize: `${12*zoom}px` }}
-        >
-          <div style={{ width: Math.max(totalWidth, containerRef.current?.clientWidth || 0) }}>
-            <div className="flex">
-              {visibleColumns.map(column => (
-                <div 
-                  key={column.field}
-                  className="ag-header-cell relative z-40"
-                  style={{ width: getColumnWidth(column.field, column.width), padding: `${Math.max(2, Math.round(2*zoom))}px ${Math.max(4, Math.round(4*zoom))}px` }}
-                >
-                  <GridHeader
-                    column={column}
-                    width={getColumnWidth(column.field, column.width)}
-                    onResize={handleResize}
-                    onSort={handleSort}
-                  />
-                  {column.filter && (
-                    <div 
-                      className="absolute top-0 right-0 px-1" 
-                      style={{ transform: `scale(${zoom})`, transformOrigin: 'top right', pointerEvents: 'auto' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <ColumnFilter
-                        column={column}
-                        data={state.rowData}
-                        onFilterChange={handleFilterChange}
-                        currentFilter={state.filterModel[column.field]}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+        {/* Content area (logical scaling: widths, heights, font-size) */}
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Analysis summary bar */}
+          {analysisConfig && Object.keys(analysisConfig.aggregations).length > 0 && (
+            <div className="text-xs md:text-sm px-4 py-2 bg-indigo-50 border-b border-indigo-200 flex flex-wrap gap-x-6 gap-y-1 leading-snug">
+              <span className="text-indigo-700 font-semibold pr-2">Aggregations:</span>
+              {Object.entries(analysisConfig.aggregations).filter(([_,t])=>t).map(([field,type]) => {
+                const val = analysisAggregates[field];
+                const col = state.columnDefs.find(c=>c.field===field);
+                if (val === undefined) return null;
+                const label = (col?.headerName || field) + ' ' + type.toUpperCase();
+                const formatted = ['sum','avg','min','max'].includes(type as any) ? val.toLocaleString(undefined,{maximumFractionDigits:2}) : val;
+                return <span key={field} className="text-indigo-700 font-medium">{label}: <span className="font-semibold">{formatted}</span></span>;
+              })}
+              {analysisConfig.contributionColumn && analysisAggregates[analysisConfig.contributionColumn] !== undefined && (
+                <span className="text-indigo-700">Total {(state.columnDefs.find(c=>c.field===analysisConfig.contributionColumn)?.headerName)||analysisConfig.contributionColumn}: {analysisAggregates[analysisConfig.contributionColumn].toLocaleString(undefined,{maximumFractionDigits:2})}</span>
+              )}
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Virtual Grid Body */}
-        <div 
-          ref={containerRef}
-          className="flex-1 ag-center-cols-viewport min-h-0"
-          style={{ }}
-        >
-          {processedData.length > 0 ? (
-            <div
-              ref={listOuterRef}
-              style={{ height: '100%', overflow: 'auto', width: '100%' }}
-              className="ag-body-viewport relative z-10 flex-1"
-            >
-              <div style={{ width: Math.max(totalWidth, containerRef.current?.clientWidth || 0), position: 'relative', zIndex: 10 }}>
-                {processedData.map((_, index) => (
-                  <VirtualRow
-                    key={index}
-                    index={index}
-                    style={{ height: scaledRowHeight, width: '100%', display: 'flex' }}
-                    data={itemData}
-                  />
+          {/* Header */}
+          <div 
+            ref={headerRef}
+            className="ag-header overflow-hidden border-b border-gray-200 z-40 bg-gray-50 shrink-0 relative"
+            style={{ height: headerHeight, overflowX: 'hidden', fontSize: `${12*zoom}px` }}
+          >
+            <div style={{ width: Math.max(totalWidth, containerRef.current?.clientWidth || 0) }}>
+              <div className="flex">
+                {visibleColumns.map(column => (
+                  <div 
+                    key={column.field}
+                    className="ag-header-cell relative z-40"
+                    style={{ width: getColumnWidth(column.field, column.width), padding: `${Math.max(2, Math.round(2*zoom))}px ${Math.max(4, Math.round(4*zoom))}px` }}
+                  >
+                    <GridHeader
+                      column={column}
+                      width={getColumnWidth(column.field, column.width)}
+                      onResize={handleResize}
+                      onSort={handleSort}
+                    />
+                    {column.filter && (
+                      <div 
+                        className="absolute top-0 right-0 px-1" 
+                        style={{ transform: `scale(${zoom})`, transformOrigin: 'top right', pointerEvents: 'auto' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ColumnFilter
+                          column={column}
+                          data={state.rowData}
+                          onFilterChange={handleFilterChange}
+                          currentFilter={state.filterModel[column.field]}
+                        />
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-              No data to display
+          </div>
+
+          {/* Virtual Grid Body */}
+          <div 
+            ref={containerRef}
+            className="flex-1 ag-center-cols-viewport min-h-0"
+            style={{ }}
+          >
+            {processedData.length > 0 ? (
+              <div
+                ref={listOuterRef}
+                style={{ height: '100%', overflow: 'auto', width: '100%' }}
+                className="ag-body-viewport relative z-10 flex-1"
+              >
+                <div style={{ width: Math.max(totalWidth, containerRef.current?.clientWidth || 0), position: 'relative', zIndex: 10 }}>
+                  {processedData.map((_, index) => (
+                    <VirtualRow
+                      key={index}
+                      index={index}
+                      style={{ height: scaledRowHeight, width: '100%', display: 'flex' }}
+                      data={itemData}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                No data to display
+              </div>
+            )}
+          </div>
+
+          {/* Loading overlay */}
+          {state.loading && (
+            <div className="ag-overlay-loading-wrapper">
+              <div className="text-center">
+                <div className="ag-loading-spinner mx-auto mb-2"></div>
+                <p className="text-gray-600 text-sm">Loading...</p>
+              </div>
             </div>
           )}
-        </div>
-
-        {/* Loading overlay */}
-        {state.loading && (
-          <div className="ag-overlay-loading-wrapper">
-            <div className="text-center">
-              <div className="ag-loading-spinner mx-auto mb-2"></div>
-              <p className="text-gray-600 text-sm">Loading...</p>
-            </div>
-          </div>
-        )}
-  {/* Status Bar at bottom */}
-  <div className="shrink-0"><StatusBar /></div>
+          {/* Status Bar at bottom */}
+          <div className="shrink-0"><StatusBar /></div>
         </div>{/* end zoom wrapper */}
       </div>
 
