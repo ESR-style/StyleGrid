@@ -241,16 +241,16 @@ const NumberFilter: React.FC<NumberFilterProps> = ({ value, onChange, placeholde
         <option value="inRange">In range</option>
       </select>
       {condition === 'inRange' ? (
-        <div className="flex space-x-2">
+        <div className="space-y-2">
           <input
             type="number"
             placeholder="From"
-            className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+            className="w-full px-3 py-1 border border-gray-300 rounded text-sm"
           />
           <input
             type="number"
             placeholder="To"
-            className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+            className="w-full px-3 py-1 border border-gray-300 rounded text-sm"
           />
         </div>
       ) : (
