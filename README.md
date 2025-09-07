@@ -1,4 +1,3 @@
-git clone <repository-url>
 # Style Grid
 
 A modern, free, open-source React + TypeScript data grid inspired by AG Grid. Built from scratch by me to replicate as many powerful enterprise features as possible—without the license cost. It's still a work in progress, but already usable for rich data-heavy interfaces.
