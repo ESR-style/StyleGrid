@@ -1,7 +1,7 @@
 git clone <repository-url>
 # Style Grid
 
-A modern, free, open-source React + TypeScript data grid inspired by AG Grid. Built from scratch by **Samarth A K** to replicate as many powerful enterprise features as possible—without the license cost. It's still a work in progress, but already usable for rich data-heavy interfaces.
+A modern, free, open-source React + TypeScript data grid inspired by AG Grid. Built from scratch by me to replicate as many powerful enterprise features as possible—without the license cost. It's still a work in progress, but already usable for rich data-heavy interfaces.
 
 > Status: Currently a static project (not yet published to npm). The goal is to release it as an installable package / simple API so anyone can drop it into their project.
 
@@ -52,6 +52,11 @@ export function App() {
 }
 ```
 
+## Screenshots
+| Grid | Charts Panel | Data Analysis |
+|------|--------------|---------------|
+| ![Grid View](public/image1.png) | ![Charts Panel](public/image2.png) | ![Data Analysis Modal](public/image3.png) |
+
 ## Contributing
 Not formal yet—open issues / ideas are welcome. Soon: guidelines + extension points.
 
@@ -62,7 +67,10 @@ MIT – free for commercial & personal use.
 Created by **Samarth A K**  
 Email: **esrsamarth@gmail.com**
 
-If this helps you, a star or feedback means a lot while I push toward the first npm release.
-
----
-Built with React, TypeScript, Vite, Tailwind CSS.
+<div align="center" style="margin-top:32px;">
+  <hr />
+  <p><strong>Built with ❤️ using React, TypeScript, Vite & Tailwind CSS</strong></p>
+  <blockquote style="font-style:italic; opacity:0.85;">
+    “Free, open, and powerful. Style Grid exists so you don't have to choose between features and freedom.”
+  </blockquote>
+</div>
