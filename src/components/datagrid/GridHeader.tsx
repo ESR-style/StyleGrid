@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useGridContext } from '../context/GridContext';
-import type { ColumnDef } from '../types/grid';
+import { useGridContext } from '../../context/GridContext';
+import type { ColumnDef } from '../../types/grid';
 
 interface GridHeaderProps {
   column: ColumnDef;

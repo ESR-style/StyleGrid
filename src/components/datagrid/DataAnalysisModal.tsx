@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import type { ColumnDef } from '../types/grid';
+import type { ColumnDef } from '../../types/grid';
 
 export type AggregationType = 'sum' | 'avg' | 'min' | 'max' | 'count';
 
-interface DataAnalysisConfig {
+export interface DataAnalysisConfig {
   visibleColumns: string[];
   aggregations: Record<string, AggregationType>;
   contributionColumn?: string; // if set and exactly one numeric column chosen for contribution
@@ -123,5 +123,3 @@ export const DataAnalysisModal: React.FC<DataAnalysisModalProps> = ({
     </div>
   );
 };
-
-export type { DataAnalysisConfig };

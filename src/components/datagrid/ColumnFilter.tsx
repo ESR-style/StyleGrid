@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, X, Calendar, Check } from 'lucide-react';
-import type { ColumnDef } from '../types/grid';
+import type { ColumnDef } from '../../types/grid';
 
 interface FilterProps {
   column: ColumnDef;

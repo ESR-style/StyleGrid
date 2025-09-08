@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react';
-import { DataGridContent } from './components/DataGridContent';
+import { DataGridContent } from './components/datagrid/DataGridContent';
 import { HeaderExportToolbar } from './components/HeaderExportToolbar';
 import { GridProvider } from './context/GridContext';
 import { generateMockData, mockColumnDefs } from './data/mockData';

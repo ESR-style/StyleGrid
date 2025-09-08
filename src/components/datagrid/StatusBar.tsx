@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useGridContext } from '../context/GridContext';
+import { useGridContext } from '../../context/GridContext';
 
 // Full-width compact status bar similar to AG Grid bottom bar
 interface StatusBarProps {}
